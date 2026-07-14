@@ -1,1 +1,614 @@
-TEST
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="refresh" content="1800">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kindle 日历天气</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #f5f1e8;
+      color: #1f1f1f;
+      font-family: Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", SimSun, serif;
+      font-size: 18px;
+      line-height: 1.45;
+    }
+
+    body {
+      padding: 18px;
+    }
+
+    .page {
+      max-width: 760px;
+      margin: 0 auto;
+      border: 2px solid #1f1f1f;
+      background: #fffaf0;
+    }
+
+    .header {
+      padding: 28px 22px 22px;
+      border-bottom: 2px solid #1f1f1f;
+      text-align: center;
+    }
+
+    .date-line {
+      font-size: 60px;
+      line-height: 1;
+      font-weight: bold;
+      letter-spacing: 0;
+    }
+
+    .weekday {
+      margin-top: 8px;
+      font-size: 26px;
+    }
+
+    .grid {
+      display: block;
+    }
+
+    .section {
+      padding: 16px 22px;
+      border-bottom: 2px solid #1f1f1f;
+      text-align: center;
+    }
+
+    .section:last-child {
+      border-bottom: 0;
+    }
+
+    .feature-section {
+      padding-top: 24px;
+      padding-bottom: 24px;
+    }
+
+    .feature-section h2 {
+      font-size: 24px;
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .weather-status {
+      margin: 4px 0 6px;
+      font-size: 30px;
+      font-weight: bold;
+    }
+
+    .weather-icon {
+      display: inline-block;
+      width: 52px;
+      height: 42px;
+      margin-right: 8px;
+      line-height: 1;
+      vertical-align: middle;
+    }
+
+    .weather-icon svg {
+      width: 52px;
+      height: 42px;
+      vertical-align: middle;
+    }
+
+    .temperature {
+      font-size: 42px;
+      font-weight: bold;
+    }
+
+    .clothing {
+      margin-top: 8px;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    #lunar {
+      margin: 6px 0 10px;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .muted {
+      color: #555;
+      font-size: 15px;
+    }
+
+    .two-col {
+      display: table;
+      width: 100%;
+      table-layout: fixed;
+    }
+
+    .two-col > div {
+      display: table-cell;
+      vertical-align: top;
+      width: 50%;
+      padding-right: 12px;
+      text-align: center;
+    }
+
+    .tag {
+      display: inline-block;
+      margin: 4px 6px 2px 0;
+      padding: 2px 8px;
+      border: 1px solid #1f1f1f;
+      background: #f0eadc;
+      font-size: 16px;
+    }
+
+    ol {
+      margin: 8px 0 0;
+      padding: 0;
+    }
+
+    li {
+      margin: 7px 0;
+    }
+
+    #newsList {
+      list-style-position: inside;
+      text-align: center;
+      font-size: 17px;
+      line-height: 1.28;
+    }
+
+    #newsList li {
+      display: inline-block;
+      vertical-align: top;
+      width: 48%;
+      margin: 2px 0.5%;
+      padding: 2px 0;
+      text-align: left;
+    }
+
+    a {
+      color: #1f1f1f;
+      text-decoration: none;
+    }
+
+    .footer {
+      padding: 10px 22px 14px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    @media (max-width: 520px) {
+      body {
+        padding: 8px;
+        font-size: 16px;
+      }
+
+      .date-line {
+        font-size: 44px;
+      }
+
+      .weather-status {
+        font-size: 24px;
+      }
+
+      .temperature {
+        font-size: 34px;
+      }
+
+      #lunar {
+        font-size: 23px;
+      }
+
+      .two-col, .two-col > div {
+        display: block;
+        width: auto;
+      }
+
+      #newsList li {
+        display: block;
+        width: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div id="dateLine" class="date-line">--月--日</div>
+      <div id="weekday" class="weekday">正在读取日期</div>
+    </div>
+
+    <div class="grid">
+      <div class="section feature-section">
+        <h2>当前位置天气</h2>
+        <div id="weatherStatus" class="weather-status"><span class="weather-icon">□</span>读取中</div>
+        <div id="weather" class="temperature">读取中</div>
+        <div id="clothing" class="clothing">穿衣指南读取中</div>
+        <div id="place" class="muted">Kindle 浏览器可能会询问是否允许定位</div>
+      </div>
+
+      <div class="section feature-section">
+        <h2>农历与黄历</h2>
+        <div id="lunar">正在计算</div>
+        <div class="two-col">
+          <div>
+            <div class="muted">宜</div>
+            <div id="goodTags"></div>
+          </div>
+          <div>
+            <div class="muted">忌</div>
+            <div id="badTags"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>热点新闻</h2>
+        <ol id="newsList">
+          <li>正在读取热点新闻</li>
+        </ol>
+      </div>
+    </div>
+
+    <div id="footer" class="footer">页面每 30 分钟自动刷新一次。</div>
+  </div>
+
+  <script>
+    (function () {
+      var CONFIG = {
+        fallbackLatitude: 39.9042,
+        fallbackLongitude: 116.4074,
+        fallbackPlace: '北京',
+        weatherUrl: 'https://api.open-meteo.com/v1/forecast',
+        newsUrl: 'https://v2.xxapi.cn/api/baiduhot'
+      };
+
+      var heavenlyStems = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
+      var earthlyBranches = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+      var zodiac = ['鼠', '牛', '虎', '兔', '龙', '蛇', '马', '羊', '猴', '鸡', '狗', '猪'];
+      var lunarMonthNames = ['正月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '冬月', '腊月'];
+      var lunarDayNames = ['初一', '初二', '初三', '初四', '初五', '初六', '初七', '初八', '初九', '初十', '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十', '廿一', '廿二', '廿三', '廿四', '廿五', '廿六', '廿七', '廿八', '廿九', '三十'];
+      var goodItems = ['祭祀', '出行', '会友', '开市', '纳财', '祈福', '修造', '安床', '入宅', '求医', '订盟', '栽种'];
+      var badItems = ['动土', '嫁娶', '远行', '搬迁', '开仓', '安葬', '诉讼', '破土', '交易', '针灸', '伐木', '探病'];
+      var lunarInfo = [
+        0x04bd8,0x04ae0,0x0a570,0x054d5,0x0d260,0x0d950,0x16554,0x056a0,0x09ad0,0x055d2,
+        0x04ae0,0x0a5b6,0x0a4d0,0x0d250,0x1d255,0x0b540,0x0d6a0,0x0ada2,0x095b0,0x14977,
+        0x04970,0x0a4b0,0x0b4b5,0x06a50,0x06d40,0x1ab54,0x02b60,0x09570,0x052f2,0x04970,
+        0x06566,0x0d4a0,0x0ea50,0x06e95,0x05ad0,0x02b60,0x186e3,0x092e0,0x1c8d7,0x0c950,
+        0x0d4a0,0x1d8a6,0x0b550,0x056a0,0x1a5b4,0x025d0,0x092d0,0x0d2b2,0x0a950,0x0b557,
+        0x06ca0,0x0b550,0x15355,0x04da0,0x0a5d0,0x14573,0x052d0,0x0a9a8,0x0e950,0x06aa0,
+        0x0aea6,0x0ab50,0x04b60,0x0aae4,0x0a570,0x05260,0x0f263,0x0d950,0x05b57,0x056a0,
+        0x096d0,0x04dd5,0x04ad0,0x0a4d0,0x0d4d4,0x0d250,0x0d558,0x0b540,0x0b6a0,0x195a6,
+        0x095b0,0x049b0,0x0a974,0x0a4b0,0x0b27a,0x06a50,0x06d40,0x0af46,0x0ab60,0x09570,
+        0x04af5,0x04970,0x064b0,0x074a3,0x0ea50,0x06b58,0x05ac0,0x0ab60,0x096d5,0x092e0,
+        0x0c960,0x0d954,0x0d4a0,0x0da50,0x07552,0x056a0,0x0abb7,0x025d0,0x092d0,0x0cab5,
+        0x0a950,0x0b4a0,0x0baa4,0x0ad50,0x055d9,0x04ba0,0x0a5b0,0x15176,0x052b0,0x0a930,
+        0x07954,0x06aa0,0x0ad50,0x05b52,0x04b60,0x0a6e6,0x0a4e0,0x0d260,0x0ea65,0x0d530,
+        0x05aa0,0x076a3,0x096d0,0x04afb,0x04ad0,0x0a4d0,0x1d0b6,0x0d250,0x0d520,0x0dd45,
+        0x0b5a0,0x056d0,0x055b2,0x049b0,0x0a577,0x0a4b0,0x0aa50,0x1b255,0x06d20,0x0ada0,
+        0x14b63
+      ];
+
+      function pad(number) {
+        return number < 10 ? '0' + number : String(number);
+      }
+
+      function setText(id, value) {
+        var node = document.getElementById(id);
+        if (node) node.innerHTML = value;
+      }
+
+      function jsonp(url, callbackName, onSuccess, onError) {
+        var script = document.createElement('script');
+        var timer = setTimeout(function () {
+          cleanup();
+          onError();
+        }, 9000);
+
+        window[callbackName] = function (data) {
+          cleanup();
+          onSuccess(data);
+        };
+
+        function cleanup() {
+          clearTimeout(timer);
+          try { delete window[callbackName]; } catch (error) { window[callbackName] = null; }
+          if (script.parentNode) script.parentNode.removeChild(script);
+        }
+
+        script.onerror = function () {
+          cleanup();
+          onError();
+        };
+        script.src = url;
+        document.getElementsByTagName('head')[0].appendChild(script);
+      }
+
+      function requestJson(url, onSuccess, onError) {
+        if (window.XMLHttpRequest) {
+          var request = new XMLHttpRequest();
+          request.onreadystatechange = function () {
+            if (request.readyState === 4) {
+              if (request.status >= 200 && request.status < 300) {
+                try {
+                  onSuccess(JSON.parse(request.responseText));
+                } catch (error) {
+                  onError();
+                }
+              } else {
+                onError();
+              }
+            }
+          };
+          request.open('GET', url, true);
+          request.send(null);
+        } else {
+          onError();
+        }
+      }
+
+      function leapMonth(year) {
+        return lunarInfo[year - 1900] & 0xf;
+      }
+
+      function leapDays(year) {
+        if (leapMonth(year)) {
+          return (lunarInfo[year - 1900] & 0x10000) ? 30 : 29;
+        }
+        return 0;
+      }
+
+      function monthDays(year, month) {
+        return (lunarInfo[year - 1900] & (0x10000 >> month)) ? 30 : 29;
+      }
+
+      function lunarYearDays(year) {
+        var sum = 348;
+        var bit;
+        for (bit = 0x8000; bit > 0x8; bit >>= 1) {
+          if (lunarInfo[year - 1900] & bit) sum += 1;
+        }
+        return sum + leapDays(year);
+      }
+
+      function solarToLunar(date) {
+        var baseDate = new Date(1900, 0, 31);
+        var offset = Math.floor((date.getTime() - baseDate.getTime()) / 86400000);
+        var year;
+        var daysOfYear = 0;
+
+        for (year = 1900; year < 2050 && offset > 0; year += 1) {
+          daysOfYear = lunarYearDays(year);
+          offset -= daysOfYear;
+        }
+        if (offset < 0) {
+          offset += daysOfYear;
+          year -= 1;
+        }
+
+        var leap = leapMonth(year);
+        var isLeap = false;
+        var month;
+        var daysOfMonth = 0;
+
+        for (month = 1; month < 13 && offset > 0; month += 1) {
+          if (leap > 0 && month === (leap + 1) && !isLeap) {
+            month -= 1;
+            isLeap = true;
+            daysOfMonth = leapDays(year);
+          } else {
+            daysOfMonth = monthDays(year, month);
+          }
+
+          offset -= daysOfMonth;
+
+          if (isLeap && month === (leap + 1)) isLeap = false;
+        }
+
+        if (offset === 0 && leap > 0 && month === leap + 1) {
+          if (isLeap) {
+            isLeap = false;
+          } else {
+            isLeap = true;
+            month -= 1;
+          }
+        }
+
+        if (offset < 0) {
+          offset += daysOfMonth;
+          month -= 1;
+        }
+
+        return {
+          year: year,
+          month: month,
+          day: offset + 1,
+          isLeap: isLeap
+        };
+      }
+
+      function cyclicalYear(year) {
+        return heavenlyStems[(year - 4) % 10] + earthlyBranches[(year - 4) % 12];
+      }
+
+      function renderDate() {
+        var now = new Date();
+        var weekNames = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+        var lunar = solarToLunar(now);
+        var yearStem = cyclicalYear(lunar.year);
+        var zodiacName = zodiac[(lunar.year - 4) % 12];
+        var seed = Math.floor(now.getTime() / 86400000);
+
+        setText('dateLine', pad(now.getMonth() + 1) + '月' + pad(now.getDate()) + '日');
+        setText('weekday', now.getFullYear() + '年 ' + weekNames[now.getDay()]);
+        setText('lunar', yearStem + zodiacName + '年 ' + (lunar.isLeap ? '闰' : '') + lunarMonthNames[lunar.month - 1] + lunarDayNames[lunar.day - 1]);
+        renderTags('goodTags', chooseDailyItems(goodItems, seed));
+        renderTags('badTags', chooseDailyItems(badItems, seed + 7));
+      }
+
+      function chooseDailyItems(items, seed) {
+        var selected = [];
+        var index;
+        for (index = 0; index < 4; index += 1) {
+          selected.push(items[(seed + index * 5) % items.length]);
+        }
+        return selected;
+      }
+
+      function renderTags(id, items) {
+        var html = [];
+        var index;
+        for (index = 0; index < items.length; index += 1) {
+          html.push('<span class="tag">' + items[index] + '</span>');
+        }
+        setText(id, html.join(''));
+      }
+
+      function loadWeather(latitude, longitude, label) {
+        var url = CONFIG.weatherUrl + '?latitude=' + encodeURIComponent(latitude) + '&longitude=' + encodeURIComponent(longitude) + '&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=auto&forecast_days=1';
+        requestJson(url, function (data) {
+          var daily = data && data.daily;
+          if (daily && daily.temperature_2m_max && daily.temperature_2m_min) {
+            var minTemp = Math.round(daily.temperature_2m_min[0]);
+            var maxTemp = Math.round(daily.temperature_2m_max[0]);
+            var weatherInfo = getWeatherInfo(daily.weather_code && daily.weather_code[0]);
+            setText('weatherStatus', '<span class="weather-icon">' + weatherInfo.icon + '</span>' + weatherInfo.text);
+            setText('weather', minTemp + '°C / ' + maxTemp + '°C');
+            setText('clothing', getClothingGuide(minTemp, maxTemp));
+            setText('place', label + '，晴雨情况与最低 / 最高温度');
+          } else {
+            renderWeatherFallback(label);
+          }
+        }, function () {
+          renderWeatherFallback(label);
+        });
+      }
+
+      function renderWeatherFallback(label) {
+        setText('weatherStatus', '<span class="weather-icon">' + weatherIconSvg('unknown') + '</span>天气暂不可用');
+        setText('weather', '天气暂不可用');
+        setText('clothing', '穿衣指南暂不可用');
+        setText('place', label + '，请稍后自动刷新');
+      }
+
+      function getWeatherInfo(code) {
+        code = Number(code);
+        if (code === 0) return { icon: weatherIconSvg('sun'), text: '晴' };
+        if (code === 1 || code === 2) return { icon: weatherIconSvg('partly'), text: '少云' };
+        if (code === 3) return { icon: weatherIconSvg('cloud'), text: '多云' };
+        if (code === 45 || code === 48) return { icon: weatherIconSvg('fog'), text: '雾' };
+        if (code === 51 || code === 53 || code === 55 || code === 56 || code === 57) return { icon: weatherIconSvg('rain'), text: '毛毛雨' };
+        if (code === 61 || code === 63 || code === 65 || code === 66 || code === 67 || code === 80 || code === 81 || code === 82) return { icon: weatherIconSvg('rain'), text: '雨' };
+        if (code === 71 || code === 73 || code === 75 || code === 77 || code === 85 || code === 86) return { icon: weatherIconSvg('snow'), text: '雪' };
+        if (code === 95 || code === 96 || code === 99) return { icon: weatherIconSvg('storm'), text: '雷阵雨' };
+        return { icon: weatherIconSvg('unknown'), text: '天气' };
+      }
+
+      function weatherIconSvg(type) {
+        var cloud = '<path d="M18 30h20c6 0 10-3 10-8s-4-8-9-8c-2-6-7-9-13-9-7 0-12 4-14 11-5 1-8 4-8 8 0 4 4 6 14 6z" fill="none" stroke="#1f1f1f" stroke-width="3" stroke-linejoin="round"/>';
+        if (type === 'sun') return '<svg viewBox="0 0 56 42"><circle cx="28" cy="21" r="9" fill="none" stroke="#1f1f1f" stroke-width="3"/><path d="M28 2v7M28 33v7M9 21H2M54 21h-7M14 7l5 5M42 30l5 5M42 12l5-5M14 35l5-5" fill="none" stroke="#1f1f1f" stroke-width="3" stroke-linecap="round"/></svg>';
+        if (type === 'partly') return '<svg viewBox="0 0 56 42"><circle cx="19" cy="14" r="8" fill="none" stroke="#1f1f1f" stroke-width="3"/><path d="M19 1v5M6 14H1M10 5l4 4M28 5l-4 4" fill="none" stroke="#1f1f1f" stroke-width="3" stroke-linecap="round"/>' + cloud + '</svg>';
+        if (type === 'cloud') return '<svg viewBox="0 0 56 42">' + cloud + '</svg>';
+        if (type === 'fog') return '<svg viewBox="0 0 56 42">' + cloud + '<path d="M9 34h38M14 39h28" fill="none" stroke="#1f1f1f" stroke-width="3" stroke-linecap="round"/></svg>';
+        if (type === 'rain') return '<svg viewBox="0 0 56 42">' + cloud + '<path d="M19 34l-3 6M29 34l-3 6M39 34l-3 6" fill="none" stroke="#1f1f1f" stroke-width="3" stroke-linecap="round"/></svg>';
+        if (type === 'snow') return '<svg viewBox="0 0 56 42">' + cloud + '<path d="M20 35v6M17 38h6M34 35v6M31 38h6" fill="none" stroke="#1f1f1f" stroke-width="2" stroke-linecap="round"/></svg>';
+        if (type === 'storm') return '<svg viewBox="0 0 56 42">' + cloud + '<path d="M30 31l-6 10 8-4-3 8 9-13-8 3z" fill="#1f1f1f"/><path d="M17 34l-3 6M43 34l-3 6" fill="none" stroke="#1f1f1f" stroke-width="3" stroke-linecap="round"/></svg>';
+        return '<svg viewBox="0 0 56 42"><rect x="12" y="7" width="32" height="28" fill="none" stroke="#1f1f1f" stroke-width="3"/><path d="M21 17c1-5 13-5 14 0 1 6-7 6-7 11M28 33v1" fill="none" stroke="#1f1f1f" stroke-width="3" stroke-linecap="round"/></svg>';
+      }
+
+      function getClothingGuide(minTemp, maxTemp) {
+        var average = (minTemp + maxTemp) / 2;
+        if (maxTemp >= 32) return '穿衣：短袖薄衫，注意防晒补水';
+        if (average >= 26) return '穿衣：短袖或薄衬衫，早晚不必加衣';
+        if (average >= 20) return '穿衣：长袖衬衫或薄外套';
+        if (average >= 14) return '穿衣：卫衣、针织衫或夹克';
+        if (average >= 8) return '穿衣：毛衣配厚外套';
+        if (average >= 0) return '穿衣：羽绒服或棉服，注意保暖';
+        return '穿衣：厚羽绒服、帽子和手套';
+      }
+
+      function detectLocation() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function (position) {
+            loadWeather(position.coords.latitude, position.coords.longitude, '当前位置');
+          }, function () {
+            loadWeather(CONFIG.fallbackLatitude, CONFIG.fallbackLongitude, CONFIG.fallbackPlace);
+          }, {
+            timeout: 12000,
+            maximumAge: 1800000
+          });
+        } else {
+          loadWeather(CONFIG.fallbackLatitude, CONFIG.fallbackLongitude, CONFIG.fallbackPlace);
+        }
+      }
+
+      function loadNews() {
+        requestJson(CONFIG.newsUrl, function (data) {
+          var list = normalizeNews(data);
+          if (list.length) {
+            renderNews(list);
+          } else {
+            renderNewsFallback();
+          }
+        }, renderNewsFallback);
+      }
+
+      function normalizeNews(data) {
+        var source = data && (data.data || data.news || data.result || data.list || data);
+        var list = [];
+        var index;
+        if (!source || !source.length) return list;
+
+        for (index = 0; index < source.length && list.length < 8; index += 1) {
+          var item = source[index];
+          var title = item.title || item.name || item.word || item.hotword || item.desc;
+          var url = item.url || item.link || item.mobileUrl || item.pcUrl;
+          if (title) list.push({ title: title, url: url });
+        }
+        return list;
+      }
+
+      function renderNews(list) {
+        var html = [];
+        var index;
+        for (index = 0; index < list.length; index += 1) {
+          if (list[index].url) {
+            html.push('<li><a href="' + escapeHtml(list[index].url) + '">' + escapeHtml(list[index].title) + '</a></li>');
+          } else {
+            html.push('<li>' + escapeHtml(list[index].title) + '</li>');
+          }
+        }
+        setText('newsList', html.join(''));
+      }
+
+      function renderNewsFallback() {
+        renderNews([
+          { title: '热点新闻接口暂不可用，页面会在下次刷新时重试' },
+          { title: '如长期不可用，可在 index.html 顶部 CONFIG.newsUrl 替换为自己的新闻接口' }
+        ]);
+      }
+
+      function escapeHtml(value) {
+        return String(value).replace(/[&<>"]/g, function (char) {
+          return {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;'
+          }[char];
+        });
+      }
+
+      function refreshClock() {
+        var now = new Date();
+        setText('footer', '页面每 30 分钟自动刷新一次。最后更新：' + pad(now.getHours()) + ':' + pad(now.getMinutes()));
+      }
+
+      renderDate();
+      refreshClock();
+      detectLocation();
+      loadNews();
+      setInterval(refreshClock, 60000);
+    }());
+  </script>
+</body>
+</html>
